@@ -12,7 +12,7 @@ using System;
 namespace FunctionApp1
 {
     public static class SaveAnOrder
-    {
+    { 
         [FunctionName("SaveAnOrder")]
         public static IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequest req,
             TraceWriter log,
@@ -22,8 +22,8 @@ namespace FunctionApp1
             PhotoOrder data;
             string requestBody = new StreamReader(req.Body).ReadToEnd();
             data = JsonConvert.DeserializeObject<PhotoOrder>(requestBody);
+             data.PartitionKey = DateTime.Now.ToString();
             data.RowKey = data.FileName;
-            data.PartitionKey = DateTime.Now.ToString();
             ordersTable.Add(data);
 
             return (ActionResult)new OkObjectResult("OrderProcessed");
