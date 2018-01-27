@@ -12,17 +12,17 @@ using System;
 namespace FunctionApp1
 {
     public static class SaveAnOrder
-    { 
+    {
         [FunctionName("SaveAnOrder")]
         public static IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequest req,
             TraceWriter log,
-            [Table("dobrystorage", Connection = "StorageConnection")] ICollector<PhotoOrder> ordersTable
+            [Table("Orders", Connection = "StorageConnection")] ICollector<PhotoOrder> ordersTable
             )
         {
             PhotoOrder data;
             string requestBody = new StreamReader(req.Body).ReadToEnd();
             data = JsonConvert.DeserializeObject<PhotoOrder>(requestBody);
-             data.PartitionKey = DateTime.Now.ToString();
+            data.PartitionKey = DateTime.Now.DayOfYear.ToString();
             data.RowKey = data.FileName;
             ordersTable.Add(data);
 
