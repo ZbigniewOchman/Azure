@@ -6,22 +6,30 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json;
+using Microsoft.WindowsAzure.Storage.Table;
+using System;
 
 namespace FunctionApp1
 {
     public static class SaveAnOrder
     {
         [FunctionName("SaveAnOrder")]
-        public static IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequest req, TraceWriter log)
+        public static IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequest req,
+            TraceWriter log,
+            [Table("dobrystorage", Connection = "StorageConnection")] ICollector<PhotoOrder> ordersTable
+            )
         {
             PhotoOrder data;
             string requestBody = new StreamReader(req.Body).ReadToEnd();
-
             data = JsonConvert.DeserializeObject<PhotoOrder>(requestBody);
+            data.RowKey = data.FileName;
+            data.PartitionKey = DateTime.Now.ToString();
+            ordersTable.Add(data);
+
             return (ActionResult)new OkObjectResult("OrderProcessed");
         }
     }
-    public class PhotoOrder
+    public class PhotoOrder : TableEntity
     {
         public string CustomerEmail { get; set; }
         public string FileName { get; set; }
